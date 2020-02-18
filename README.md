@@ -20,3 +20,19 @@ hidaruma
 作業が落ち着くまでは「nページの~」といった指摘は対処が難しい。
 章分けも見直す可能性がある。
 
+# Progress
+
+- [] main.tex
+- [] preface.tex
+- [x] luatex.tex
+- [] ci.tex
+- [] classfile.tex
+- [] stylefile.tex
+- [] font-setting.tex
+- [] tcolorbox.tex
+- [] tikz.tex
+- [] partial-compile.tex
+- [] install.tex
+- [] vertical-writing.tex
+- [] macro.tex
+- [] webapp.tex
