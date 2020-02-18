@@ -1,0 +1,71 @@
+% +++
+% sequence = ["luajitlatex", "bibtex", "luajitlatex", "luajitlatex"]
+% max_repeat = 3
+% [programs.luajitlatex]
+%   command = "luajittex"
+%   args = "%T"
+%   opts = "--fmt=luajitlatex.fmt"
+% [programs.bibtex]
+%   command = "pbibtex"
+%   args = "%B"
+% [programs.makeindex]
+%   command = "mendex"
+%   args = "%B.idx"
+% +++
+\documentclass[main]{subfiles}
+
+\begin{document}
+\chapter{\LaTeX{}環境を調えない場合}
+\begin{abstract}
+ローカルの計算機に\LaTeX{}環境を用意するのが面倒、デカい、よく分からないといった場合に
+利用できる、\LaTeX{}のためのWebサービスの紹介です。
+\end{abstract}
+
+\section{Overleaf}\index{Overleaf}\label{overleaf}
+Overleaf\cite{overleaf}はOverleaf社の提供するオンライン\LaTeX{}エディタ環境です。
+自分の環境に\LaTeX{}環境を構築することなく\LaTeX{}文書を作成、ビルドすることができます。
+内部的には\TeX{}Liveのscheme-full\index{scheme-full}が入っているので、
+そのままでCTAN収録のパッケージを利用できる他、ファイルをアップロードすることで
+独自のクラスファイルやスタイルファイル、フォント\footnote{%
+オンラインサービスですので、フォントのアップロードに関しては規約をよく確認してください。%
+}も利用できます。
+また、学会などで指定される独自のクラスファイルもカバーしています。
+アカウントは無料で作成することができ、月額\$15を課金することで
+GitHubやDropboxといったオンラインサービスとの連携や、コンパイル時間の制限\footnote{%
+無料枠はコンパイルに使える時間が1分ですので、%
+\LuaLaTeX{}、特にキャッシュされていない
+NotoフォントやSourceHanフォントを利用しようとするとフォントのロードで終了します。%
+}の緩和などが行えます。
+以前は無料アカウントではプロジェクトを非公開設定にすることができませんでしたが、
+2020年2月現在、無料アカウントでも非公開で作業することができます。
+教育用のディスカウントも存在するので、特に大学生の方などは検討しても良いかもしれません。
+
+より詳しい情報は
+「インストールいらずのLATEX入門 Overleafで文書作成\cite{bandou:overleaf}」などを参照してください。
+
+2020年2月現在、内部的な\TeX{}Liveは2019年版です。
+Lua\TeX{}は挙動の変更が少々アグレッシブなので、
+利用する場合はその辺りにも注意しましょう。
+
+\section{Cloud LaTeX}
+同様のサービスにアカリク社の提供するCloud LaTeX\cite{cloudlatex}が存在します。
+内部の\TeX{}Liveのバージョンはヘルプページによれば2017とのことです
+\footnote{2020年2月現在}。
+latexmk\index{latexmk}を用いてプレビューのビルドは回しているそうです。
+左側にエディタ、右側にビルドプレビューという構成は同じですが、連携可能なのはDropbox
+であったり、\TeX{}に関する機能でユーザが設定できるものは処理を行うエンジンを設定する程度です。
+クラスファイルやスタイルファイルなどについては「\TeX{}Liveに同梱されているスタイルファイルはある程度利用可能」とのことで、
+無ければ自分でアップロードするファイルに含めるか運営に連絡を、とのことなので
+「細かい設定はしないけれどとりあえず書いてみたい」という方はこちらも良いでしょう。
+
+
+
+更に硬派、若しくはコンプラに縛られた方は「オンプレで何かないの？」と要望を挙げられるかも
+しれません。OSSとして、GitHubにあるOverleaf
+\footnote{\url{https://github.com/overleaf/overleaf}}を自分でビルドする
+などの手段があります。
+他の手段としては、ある程度\LaTeX{}のビルド手順を知っておく必要がありますが、
+\ref{chap:ci}章のようにWeb上のCIサービスを利用するのも手でしょう。
+
+
+\end{document}
