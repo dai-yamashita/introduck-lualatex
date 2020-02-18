@@ -1,0 +1,267 @@
+% +++
+% sequence = ["lualatex", "bibtex", "lualatex", "lualatex"]
+% max_repeat = 3
+% [programs.bibtex]
+%   command = "pbibtex"
+%   args = "%B"
+% [programs.makeindex]
+%   command = "mendex"
+%   args = "%B.idx"
+% +++
+\documentclass[main]{subfiles}
+\pagestyle{plain}
+\begin{document}
+
+
+\chapter{ビルドツール}
+\begin{abstract}
+\LaTeX{}の文書を完成まで持っていくには、
+何度もコンパイルをしたり複数のツールを順に叩いたり
+する必要があります。その補助を行うのがビルドツールです。
+\cmd{make}コマンドのようなもの、と考えてください。
+\ref{chap:ci}章では\TeX{}環境全てを含めての自動化の話となりますが、
+本章で紹介するのは、\TeX{}環境を構築した上で
+\TeX{}文書を作成する際のビルドツールとなります。
+\end{abstract}
+
+\section{latexmk}
+latexmk\index{latexmk}\cite{latexmk}はPerl製の\LaTeX{}用ビルドツールです。
+\TeX{}Liveに収録されています。
+IDEによる自動ビルドなども多くはlatexmkを使用する設定になっています。
+設定ファイル（.）latexmkrcをビルドする\ext{tex}ファイルと同じ
+場所に置き、
+\begin{terminal}
+latexmk <ビルドする.texファイル>
+\end{terminal}
+を叩くと処理を行います。実際に走らせる際に\code{-r}オプションで設定ファイルを
+指定することも可能です。
+また、設定ファイル自体を置かず引数を設定して叩くこともできますが、
+作業の効率化の面からみてファイルを置いた方が楽です。
+優先されるのは引数によるオプションですが。
+
+対象となるソースに変更があれば再ビルドを行い、
+無ければ何も行わないという動作をします。
+
+\begin{column}{検知されない変更}
+注意点として、
+\ref{chap:partial}章のように\texcs{include}やsubfilesパッケージを使用していて
+main.texを対象にする場合、一度ビルドした後、
+分割されたファイルにのみ変更があり、
+main.texに変更が無い場合
+main.texをlatexmkでビルドしようとしても
+latexmkはその変更を検知しません。
+\end{column}
+
+\subsection{latexmkrcの例}
+
+\begin{source}{latexmkrcの例}
+#!/usr/bin/env perl
+$latex = 'dvilualatex -synctex=1 -halt_on_error';
+$latex_silent = 'dvilualatex -synctex=1 -halt-on_error -interaction=batchmode';
+$bibtex = 'pbibtex';
+$biber = 'biber --bblencoding-utf8 -u -U --output_safechars';
+$dvipdf = 'dvipdfmx %O -o %D %S';
+$makeindex = 'mendex %O -o %D %S';
+$max_repeat = 5;
+$pdf_mode = 4;
+$pdf_previewer = 'evince';
+\end{source}
+OS環境によってはPerlのパスなどが異なるかと思います。
+デフォルト値が設定してある変数とない変数があり、
+日本語\LaTeX{}環境に合わせて
+設定を書き換えておくことになります。
+「\code{$latex = platex}にする」などがよくある例ですね。
+基本的には設定ファイルによってデフォルト値を書き換えて動作させる
+作りなので、指定していない値はデフォルト値が使われます。
+
+頻出事項として抑えておくべきは\code{$pdf_mode}とコマンド中の変数でしょうか。
+
+\subsection{\code{pdf_mode}}
+\begin{description}
+\item[0]{PDFを作成しません。\code{$latex}のコマンドを使います。}
+\item[1]{pdflatexを使用します。\code{$pdflatex}を使います。}
+\item[2]{DVIとPSを経由してのPDFです。\code{$latex}と\code{$dvips}と\code{$ps2pdf}を使います。}
+\item[3]{DVIからのPDFです。\code{$latex}と\code{$dvipdf}を使います。}
+\item[4] {lualatexを使用します。\code{$lualatex}を使います。}
+\item[5]{xelatexを使用します。}  
+\end{description}
+
+\subsection{変数}
+\begin{description}
+    \item[\code{\%O}]{実行時オプション}
+    \item[\code{\%S}]{入力ファイル名}
+    \item[\code{\%D}]{出力ファイル名}
+    \item[\code{\%B}]{処理するファイルのベース名}   
+\end{description}
+
+新しいlatexmkでの\LuaLaTeX{}の\code{pdf_mode}は\code{4}です。
+\code{$pdf_mode = 1}にして\code{$pdflatex = lualatex}とするのは過去の話なので、
+新しい環境では新しい書き方にすることをお薦めします。
+
+\subsection{クリーン}
+\shcmd{latexmk -c}（clean）は\LaTeX{}文書ビルドにおける中間生成物を、
+\shcmd{latexmk -C}（cleanup_full、Clobber）はビルドにおける生成物全てを
+削除する補助コマンドです。実は\code{$del_dir}に値を設定していると削除ではなく
+指定したディレクトリにファイルを移動します\footnote{del_dirじゃないじゃんね。}。
+
+このコマンドも基本的にデフォルト値を元に動作します。
+デフォルトの他に追加で削除したいファイルがある場合は
+\code{$clean_ext}や\code{$clean_full_ext$}にスペース区切りで記述しましょう。
+\shcmd{-c}・\shcmd{-C}を毎回叩きたくないという場合、
+\code{$cleanup_mode}を書き換えるとビルド時の最後にクリーン動作を行うようになります。
+
+\begin{description}
+    \item[0]{デフォルト値です。削除動作をしません。}
+    \item[1]{\code{-C}オプションと等価です。dry-runに近いことになります。}
+    \item[2]{\code{-c}オプションと等価です。\ext{dvi}、\ext{ps}や\ext{pdf}といったものを残して削除します。}
+\end{description}
+
+\begin{column}{削除対象の変更補足}
+逆に一部のファイルを何らかの事情で残したい場合は少し複雑です。
+基本的には\code{@generated_exts}の拡張子のリストを
+元にファイルの削除をするので、ここを書き換えることが推奨されています。
+latexmk.plの内部の変数のうち、\code{%other_generated}
+は\pdfLaTeX{}系の生成物である\code{%generated_log}
+の情報を元にするようになっています。他に\code{@index_bibtex_generated}
+や\code{@aux_files}
+の値などを見ながら削除対象のファイルのリストを決定し、
+\code{unlink}を行います。
+\end{column}
+
+\section{arara}
+arara\index{arara}\cite{ctan:arara}はJava製のビルドツールです。\TeX{}Liveに収録されています。
+詳細な設定はYAML形式で記述します。日本語での資料は多くありませんが、
+「チョット arara してみた件」\cite{zr:arara}を参照するのが良いでしょう。
+
+概略のみ紹介します。
+コンパイル対象のテキストファイルの先頭コメントにコマンドを記述します。
+設定ファイルのYAMLであるararaconfig.yamlをホームディレクトリに置き、
+規則ファイルのYAMLのパスとファイルタイプ、マッチさせるパターンをここに記述します。
+パスの先の規則ファイルでは、実際に処理する文書に書くときに指定に使う\code{identifier}、
+正式名、実行コマンドと引数を記載します。
+
+文書と独立に規則を明示的に設定できるワケで、ユースケースが合う方は検討してみても良いかも
+しれません。
+
+\section{llmk}
+llmk\index{llmk}\cite{wtsnjp:llmk}（lightweight latex make\index{lightweight latex make}）は
+朝倉卓人\href{https://twitter.com/wtsnjp}氏による\LaTeX{}のmakeツールで、
+texlua\index{texlua}で実装されています。
+開発のモチベーションはlatexmkの設定ファイルである.latexmkrcが
+隠しファイルファイルとして置けてしまうこと、
+Perlのコードなので何でもできてしまって良くないことが
+挙げられています\cite{wtsnjp:blog-llmk}。
+2020年1月現在、利用するにはGitHubからllmk.luaをダウンロードするか、
+rakeを利用してインストールする必要があります。
+
+
+llmkではmakeの設定をTOML形式で記述します。
+設定自体はlatexmkを利用したことがあればあまり複雑には感じないかと
+思います。ただ、引数を代入するための変数が、llmkに渡されるファイル名を\code{\%S}、
+各ターゲット名を表す\code{\%T}、
+\code{\%S}のベース名\footnote{ファイル名から拡張子を除いたもの。}を\code{\%B}という
+指定方法になっているので注意してください。
+記述する場所は、ビルドする\ext{tex}ファイルの先頭のコメント部分や、
+ビルドされるディレクトリに配置したllmk.tomlになります。
+各\ext\{tex}毎に設定を記述できるので、作業途中の部分コンパイルや複数人での執筆時に
+便利です。
+
+\begin{snippet}
+%llmk.toml
+latex = "lualatex"
+source = "main.tex"
+\end{snippet}
+\code{source}は必ずしも必要ありません。\code{latex}はデフォルト値があり、
+上のようにせずとも\code{lualatex}を使用するようになっています。
+単純には上のように書きますが、これだとあまりTOML記法の恩恵がありません。
+
+\begin{source}
+% llmk.toml
+latex = "lualatex"
+source = ["sub1.tex", "sub2.tex"]
+max_repeat = 3
+\end{source}
+\code{source}に複数の.texを指定した例です。TOMLの嬉しさが出てきました。
+
+次のはちょっと悪例ですが、そのまま記載します。
+\begin{source}
+% buildtool.tex
+% +++
+% sequence = ["luajitlatex", "bibtex", "luajitlatex", "luajitlatex"]
+% max_repeat = 3
+% [programs.luajitlatex]
+%   command = "luajittex"
+%   args = "%T"
+%   opts = "--fmt=luajitlatex.fmt"
+% [programs.bibtex]
+%   command = "pbibtex"
+%   args = "%B"
+% [programs.makeindex]
+%   command = "mendex"
+%   args = "%B.idx"
+% +++
+\end{source}
+試行錯誤中の本章のllmk用記述です。
+\ext{tex}的には無視すべきコメント部分なので\code{%} を忘れないでください。
+llmk処理部分を上下\code{+++}で囲います。
+
+用意しておいて\code{makeindex}を使っていなかったりと、
+色々察していただきたいですが、\code{sequence}を指定し
+\code{sequence}で指定する各コマンドの詳細を記載します。
+
+例えば\code{max_repeat}は\code{sequence}で指定するなら無視という挙動になる筈です。
+
+llmk.tomlの\code{source}にこの\ext{tex}ファイルを記述していない場合、
+\shcmd{ ./llmk.lua buildtool.tex}のように指定します。
+
+
+\code{sequence}は柔軟なので、次のような記述も可能です。
+\begin{source}
+% +++
+% sequence = ["lualatex", "clulatex", "fuga"]
+% [programs.clulatex]
+%   command = "cllualatex"
+%   args = "%T"
+% [programs.fuga]
+%   command = "evince"
+%   args = "%B.pdf"
+% +++
+\end{source}
+
+\subsection{クリーン}
+latexmk同様、\code{-c}・\code{-C}オプションで生成物の削除を行います。
+latexmkのように「設定ファイル中に記述して中間生成物自動削除」の機能は
+2020年1月現在ありません。
+削除対象のファイルの変更は\code{clean_files}・\code{clobber_files}の値を変えましょう。
+
+\code{clulatex}の\code{command}の\cmd{cllualatex}はClut\TeX{}\index{Clut\TeX{}}のコマンド
+ですが、問題なく実行できます。指定する名前自体はデフォルトが存在しなくても
+\code{sequence}で指定すれば良いので、\code{fuga}でも動きます。
+\code{fuga}ではUbuntuのPDFビューアであるevinceを起動してみました。
+
+\begin{terminal}
+$ ./llmk.lua <ビルドする>.tex #コメント部分に記述した場合
+
+$ ./llmk.lua #llmk.tomlを置いた場合
+\end{terminal}
+初歩的な話ですが、llmkをGitHubからダウンロードしてディレクトリに置いただけの場合は
+ファイル名である.luaまで書かないと動きません。
+
+
+\section{Clut\TeX{}}
+Clut\TeX{}\index{ClutTeX}\cite{ctan:cluttex}は
+Mizuki Arata氏によるLua製のツールです。
+CTANに収録されています。latexmkなどが設定ファイルを
+元に処理を実行するのに対し、
+コマンドラインオプションなどで操作を指定すること、
+テンポラリなディレクトリを作成し作業するので
+\ext{aux}・\ext{log}・\ext{out}ファイルや、\ext{dvi}ファイルなどを
+ディレクトリを汚さないことを特徴としています。
+日本語文書処理に使われる処理系に関しては、\cmd{cl<エンジン名> }が短縮コマンドになっています。
+\LuaLaTeX{}であれば、\cmd{cllualatex}となります。
+
+Clut\TeX{}は単体で必要回コンパイルする前提なので、
+llmk\index{llmk}などと組み合わせる場合は中間ファイルの扱いやオプションに注意しましょう。
+
+
+\end{document}
