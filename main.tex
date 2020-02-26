@@ -1,0 +1,168 @@
+\documentclass[lualatex, book, jafontsize=11Q, paper=b5, twoside, openright, head_space=1.5cm, foot_space=2cm, hanging_punctuation, gutter=1cm, line_length=56zw]{jlreq}
+\jlreqsetup{%
+    frontmatter_pagestyle = {front},
+    mainmatter_pagestyle = {plain},
+}
+\usepackage{celaeno-colophon}
+\usepackage[main=japanese, latin, greek]{babel}
+\usepackage{comment}
+\usepackage{bxtexlogo}
+\bxtexlogoimport{*,**}
+\usepackage[luatex, %
+bookmarks=true, %
+bookmarksnumbered=true,%
+colorlinks=false,%
+hypertexnames=false,%
+pdfencoding=auto,%
+unicode,%
+hidelinks%
+]{hyperref}
+%\usepackage{jlreq-trimmarks}
+\usepackage[match, no-math]{luatexja-fontspec}
+\usepackage{luatexja-otf}
+\usepackage{luatexja-adjust}
+\usepackage{luatexja-ruby}
+\usepackage{luacode}
+\usepackage[backend=biber, style=numeric]{biblatex}
+\addbibresource{main.bib}
+
+\setmainfont[Ligatures=TeX]{TeXGyreTermes}
+\setsansfont[Ligatures=TeX]{TeXGyreHeros}
+\IfFontExistsTF{NotoSerifCJKJp}{%
+\setmainjfont[YokoFeatures={JFM=jlreq},% 
+  TateFeatures={JFM=jlreqv}, %
+  AltFont={{Range="3040-"30FF, Font=GL-Antique}},
+  Ligatures=TeX,
+  Kerning=On
+  ]{NotoSansCJKJpMedium}%
+%]{NotoSerifCJKJpRegular}
+\setsansjfont{NotoSansCJKJpBold}%
+  }{%
+\setmainjfont[YokoFeatures={JFM=jlreq},% 
+  TateFeatures={JFM=jlreqv}, %
+  AltFont={{Range="3040-"30FF, Font=IPAexGothic}}]{IPAexMincho}%
+}
+\newjfontfamily{\headingfont}{NotoSerifCJKJp}[YokoFeatures={JFM=jlreq}]
+\newfontfamily{\pagefont}{EB Garamond}[Numbers={OldStyle, Proportional}]
+
+%\setsansjfont{NotoSansCJKJpRegular}
+\setmonofont{B612MonoRegular}
+
+\usepackage{makeidx}
+\makeindex
+\usepackage{subfiles}
+\usepackage{tikz}
+\usepackage{eso-pic}
+\usetikzlibrary{positioning, shapes, backgrounds, calc}
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{foreground}
+\pgfsetlayers{background,main,foreground}
+\ModifyHeading{chapter}{%
+font=\Huge\gtfamily,%
+align=right,%
+pagebreak=begin_with_odd_page,%
+after_space=2\zh,%
+  lines=4,%
+format={\AddToShipoutPicture*{%
+
+\begin{tikzpicture}[remember picture, overlay]
+    \begin{pgfonlayer}{background}
+    \fill [color=gray] (current page.north east) rectangle ($(current page.west)!.75!(current page.north west) $);
+    \fill [color=white] ($(current page.north) + (7.0, -1.0) $) circle [x radius=.7, y radius=.7];
+    \end{pgfonlayer}
+\end{tikzpicture}
+}%
+{\gtfamily%
+%    \raisebox{2.6\zh}{%
+    \jlreqHeadingLabel{#1}\\
+%}
+}\jlreqHeadingText{#2}\\%
+}
+}
+\usetikzlibrary{shapes.callouts, shapes.arrows, positioning}
+\usepackage{fancyvrb}
+\usepackage{graphicx}
+
+\newlength{\SpeechCharacterWidth}
+\setlength{\SpeechCharacterWidth}{3cm}
+\newlength{\SpeechBoxWidth}
+\setlength{\SpeechBoxWidth}{\dimexpr\textwidth - 4.5cm -4.5cm\relax}
+\usepackage{callouts}
+\usepackage{introduck-lltx}
+%%% wrap commands
+\ModifyHeading{section}{%
+format={\raisebox{-.75\zh}[0pt][0pt]{\vrule width 3pt height 2\zh} \hspace{7pt} \thesection
+\ \jlreqHeadingText{#2}},%
+  indent={-15pt}%
+  }
+\NewPageStyle{front}{%
+nombre={\pagefont\thepage},
+nombre_position=bottom-right
+}
+\usepackage{everypage}
+
+\RenewPageStyle{plain}{%
+nombre={\pagefont\thepage},
+running_head_position=top-right,
+nombre_position=bottom-right,
+odd_running_head={_section},
+even_running_head={_chapter}
+}
+
+
+\title{IntroDuck \LuaLaTeX{}}
+\author{hidaruma}
+\date{July 2019}
+\usepackage{lmodern}
+\usepackage{dirtree}
+\begin{document}
+\maketitle
+%\AddToShipoutPicture{%
+
+
+\AddEverypageHook{%
+\begin{tikzpicture}[remember picture, overlay]%
+  \begin{pgfonlayer}{background}%
+  %\fill [color=gray, opacity=.7] ($(current page.north east)$)rectangle ($(current page.north west)!.10!(current page.west) $);%
+%  \fill [color=gray, opacity=.7] ($(current page.south east)$)rectangle ($(current page.south west)!.12!(current page.west) $);%
+  \end{pgfonlayer}%
+%  \begin{luacode*}
+%  \end{luacode*}
+\end{tikzpicture}}%
+
+\subfile{preface}
+\frontmatter
+\tableofcontents
+\mainmatter
+\chapter{Lua\LaTeX{}}
+\subfile{luatex}
+\chapter{\LuaLaTeX{}の大枠の設定}
+\subfile{classfile}
+\subfile{stylefile}
+% font-setting
+\subfile{font-setting}
+
+\subfile{tikz}
+%Luaマクロ
+\subfile{macro}
+%ビルドツール
+\subfile{buildtool}
+% 分割コンパイル
+\subfile{partial-compile}
+\subfile{tcolorbox}
+\subfile{cloudservice}
+\subfile{ci}
+\printbibliography
+
+\appendix
+\subfile{install}
+\subfile{vertical-writing}
+\subfile{webapp}
+\subfile{faq}
+\backmatter
+\printindex
+\subfile{ps}
+
+\subfile{colophon}
+
+\end{document}
