@@ -1,0 +1,127 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{introduck-lltx}
+\RequirePackage{expl3}
+\RequirePackage{xparse}
+\RequirePackage{wtref}
+\RequirePackage[skins,listings,breakable, most]{tcolorbox}
+
+\NewDocumentCommand{\dirpath}{ m }{
+    \cs_new:Npn \dirpath:n #1 {
+        \textit{#1}
+    }
+}
+
+\NewDocumentCommand{\ext}{ m }{
+    \texttt{.#1}
+}
+
+\NewDocumentCommand{\texcs}{ v }{
+    \texttt{\textbackslash #1}
+}
+
+
+%% tcolorbox
+
+\DeclareTotalTCBox{\titlecmd}{ m }{ colback=black, arc=0mm}{\texttt #1}
+
+\DeclareTotalTCBox{\titlecode}{ m }{ colback=gray!20}{\texttt #1}
+
+\DeclareTotalTCBox{\cmd}{ v } 
+{verbatim,coltext=white, colback=black, arc=0mm}{\scriptsize #1}
+\DeclareTotalTCBox{\code}{ v } 
+{verbatim, colback=gray!20}{\scriptsize #1}
+
+
+\newtcblisting{snippet}[0]{%
+ listing only,
+    breakable,
+    bicolor,
+    colback=gray!3,
+    listing options={
+      language          = {tex},           % Language
+      basicstyle        = {\small\ttfamily},       % Default format
+      breaklines        = true,                  % Automatic line breaks
+      breakatwhitespace = true,                  % Line breaks only at white spaces
+      tabsize           = 4,                     % Number of spaces equal to a tab
+      showspaces        = true,                 % Show spaces in the code
+      showtabs          = true,                 % Show tabs in the code
+      showstringspaces  = false,                 % Show spaces among strings
+      numbers= none,
+    },   
+}
+
+\newtcblisting[auto counter, number within=section]{terminal}[1][]{%
+ listing only,%
+    breakable,%
+    bicolor,%
+    colback=black,%
+    listing options={%
+      language          = {sh},           % Language
+      basicstyle        = {\small\ttfamily\color{white}},       % Default format          
+      breaklines        = true,                  % Automatic line breaks
+      breakatwhitespace = true,                  % Line breaks only at white spaces
+      tabsize           = 4,                     % Number of spaces equal to a tab
+      showspaces        = false,                 % Show spaces in the code
+      showtabs          = false,                 % Show tabs in the code
+      showstringspaces  = false%
+  },%
+  every listing line={\textbf{\texttt{{\small\ifthenelse{\equal{#1}{root}}{\# }{\$ }}}}
+}
+\newtcblisting{source}[0]{%
+ listing only,
+    breakable,
+    bicolor,
+    colback=gray!3,
+    listing options={
+      language          = {tex},           % Language
+      basicstyle        = {\small\ttfamily},       % Default format
+      breaklines        = true,                  % Automatic line breaks
+      breakatwhitespace = true,                  % Line breaks only at white spaces
+      tabsize           = 4,                     % Number of spaces equal to a tab
+      showspaces        = true,                 % Show spaces in the code
+      showtabs          = true,                 % Show tabs in the code
+      showstringspaces  = false,                 % Show spaces among strings
+  },
+  overlay={%
+  \begin{tcbclipinterior}
+  \fill{black!10!white} (frame.south west) rectangle ([xshift=5mm]frame.north west);
+  \end{tcbclipinterior}}
+}
+
+\newtcblistinginput{}
+
+\newtcolorbox{column}[1][]{
+text only,
+breakable,
+title={#1},
+colback=gray!2,
+fonttitle={\bfseries}
+}
+
+
+%
+
+\NewDocumentEnvironment{abstract}{ m }{% start
+\vspace{2\zh}
+	\begin{center}
+		\begin{minipage}{0.7\textwidth}
+			\small 
+}{% end
+		\end{minipage}
+	\end{center}
+	\vspace{2\zh}
+}
+
+
+%% wtref
+\newref{fig}
+\setrefstyle{fig}{
+    prefix={図}
+}
+\newref{list}
+\setrefstyle{list}{
+    prefix={リスト}
+}
+
+
+\endinput
